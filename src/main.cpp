@@ -2,29 +2,52 @@
 #include <vector>
 
 #include "ray.hpp"
-#include "wall.hpp"
 #include "raylib.h"
+
+const int screenWidth = 800;
+const int screenHeight = 450;
+const int targetFPS = 60;
+const int num_rays = 100;
 
 int main(void)
 {
 	// Initialization
 	//--------------------------------------------------------------------------------------
-	const int screenWidth = 800;
-	const int screenHeight = 450;
-	const int targetFPS = 60;
 	InitWindow(screenWidth, screenHeight, "2D Raycasting");
 	SetTargetFPS(targetFPS);
 
 
 	// create vector of walls
 	std::vector<raycast::Wall> walls;
-	walls.push_back(raycast::Wall{screenWidth-10, 10, screenWidth-20, screenHeight-100});
-	walls.push_back(raycast::Wall{screenWidth-20, screenHeight-100, 100, screenHeight-10});
-	walls.push_back(raycast::Wall{100, screenHeight-10, screenWidth-10, 10});
+	std::vector<raycast::Wall> square = raycast::Wall::createPolygon({
+		raycast::Point{50, 50},
+		raycast::Point{50,  100},
+		raycast::Point{100,  100},
+		raycast::Point{100,  50},
+		});
+	
+	std::vector<raycast::Wall> triangle = raycast::Wall::createPolygon({
+		raycast::Point{200, 70},
+		raycast::Point{400,  200},
+		raycast::Point{200,  300},
+		});
+	
+	std::vector<raycast::Wall> trapezoid = raycast::Wall::createPolygon({
+		raycast::Point{500, 200},
+		raycast::Point{600,  200},
+		raycast::Point{750, 400},
+		raycast::Point{400,  400},
+		});
+	
+	walls.insert(walls.end(), square.begin(), square.end());
+	walls.insert(walls.end(), triangle.begin(), triangle.end());
+	walls.insert(walls.end(), trapezoid.begin(), trapezoid.end());
+
+	std::cout << "length: " << walls.size() << std::endl;
 
 	// create vector of rays
-	const int num_rays = 100;
 	std::vector<raycast::Ray> rays;
+	rays.reserve(num_rays);
 	raycast::Point ray_point{10, screenHeight/2};
 
 	for (int a = 0; a < num_rays; a++)
@@ -39,38 +62,30 @@ int main(void)
 		//----------------------------------------------------------------------------------
 		// TODO: Update your variables here
 		//----------------------------------------------------------------------------------
-		if (IsKeyDown(KEY_UP))
-		{
-			ray_point.y -= 60*GetFrameTime();
-		}
-		if (IsKeyDown(KEY_DOWN))
-		{
-			ray_point.y += 60*GetFrameTime();
-		}
+		// if (IsKeyDown(KEY_UP)) ray_point.y -= move_speed*GetFrameTime();
+		// if (IsKeyDown(KEY_DOWN)) ray_point.y += move_speed*GetFrameTime();
+		// if (IsKeyDown(KEY_LEFT)) ray_point.x -= move_speed*GetFrameTime();
+		// if (IsKeyDown(KEY_RIGHT)) ray_point.x += move_speed*GetFrameTime();
 
-		if (IsKeyDown(KEY_LEFT))
-		{
-			ray_point.x -= 60*GetFrameTime();
-		}
-		if (IsKeyDown(KEY_RIGHT))
-		{
-			ray_point.x += 60*GetFrameTime();
-		}
+		// Have rays follow the mouse
+		ray_point.x = GetMouseX();
+		ray_point.y = GetMouseY();
+
 		// Draw
 		//----------------------------------------------------------------------------------
 		BeginDrawing();
-
 			ClearBackground(BLACK);
 
 			// Draw Walls
 			for (raycast::Wall wall : walls)
 			{
+				// printf("Point A: (%f, %f)\nPoint B: (%f, %f)\n", wall.getA().x, wall.getA().y, wall.getB().x, wall.getB().y);
 				DrawLineEx(Vector2{wall.getA().x, wall.getA().y}, Vector2{wall.getB().x, wall.getB().y}, 2, GREEN);
-			}			
+			}	
 			// Draw Rays
 			float length_ray = 100;
 			Vector2 center{rays[0].getPos().x, rays[0].getPos().y};
-			DrawCircleV(center, 5, RED);
+			// DrawCircleV(center, 5, RED); // for drawing center
 			
 			for (raycast::Ray ray : rays)
 			{	

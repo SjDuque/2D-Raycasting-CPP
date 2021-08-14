@@ -2,7 +2,6 @@
 #define RAY_H
 
 #include "wall.hpp"
-#include "point.hpp"
 
 namespace raycast{
 	class Ray 

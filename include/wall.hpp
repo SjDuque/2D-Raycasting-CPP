@@ -1,5 +1,8 @@
 #ifndef WALL_H
 #define WALL_H
+
+#include <vector>
+
 #include "point.hpp"
 
 namespace raycast{
@@ -13,8 +16,11 @@ namespace raycast{
 		Wall(float x1, float y1, float x2, float y2);
 		Wall(Point a, Point b);
 		Wall(Point* a, Point* b);
+		
 		Point getA();
 		Point getB();
+
+		static std::vector<Wall> createPolygon(std::vector<Point> points);
 	};
 }
 

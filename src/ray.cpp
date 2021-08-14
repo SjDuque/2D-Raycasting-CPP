@@ -1,7 +1,4 @@
 #include "ray.hpp"
-#include "wall.hpp"
-#include "point.hpp"
-#include "math.h"
 
 using namespace raycast;
 
