@@ -70,7 +70,7 @@ target_link_libraries(${PROJECT_NAME} raylib)
 
 set(link_src "${CMAKE_SOURCE_DIR}/assets")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC") # use "if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND APPLE)" if your configs get separated on osx
-	set(link_dst "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/<assets") 
+	set(link_dst "${CMAKE_CURRENT_BINARY_DIR}/${CONFIG}/<assets") 
 else() 
 	set(link_dst "${CMAKE_CURRENT_BINARY_DIR}/assets") 
 endif() 
