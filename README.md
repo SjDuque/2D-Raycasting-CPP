@@ -44,5 +44,7 @@ cmake --build .
 ```
 
 ## Acknowledgement Stuff
+
 Project Template: https://github.com/SjDuque/Raylib-CMake
+
 Algorithm: https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line_segment
