@@ -6,17 +6,35 @@
 using namespace raycast;
 
 //---------------------------------
-// Constructor
+// Constructors
 //---------------------------------
 
 Ray::Ray()
 	: pos(new Point{0, 0}), angle(0) {}
 
 Ray::Ray(Point* p, float angle)
-	: pos(p), angle(0) {}
+	: pos(p), angle(angle) {}
 
 Ray::Ray(float x, float y, float angle)
 	: pos(new Point{x, y}), angle(angle) {}
+
+//---------------------------------
+// Getters and setters
+//---------------------------------
+
+Point Ray::getPos(){
+	return *this->pos;
+}
+void Ray::setPos(Point* p){
+	this->pos = p;
+}
+
+float Ray::getAngle(){
+	return this->angle;
+}
+void Ray::setAngle(float a){
+	this->angle = a;
+}
 
 float Ray::getDirX()
 {
@@ -26,11 +44,15 @@ float Ray::getDirY()
 {
 	return sinf(this->angle);
 }
-
 Point Ray::getDir()
 {
 	return Point{cosf(this->angle), sinf(this->angle)};
 }
+
+void setPos(Point* p);
+float getDirX();
+float getDirY();
+Point getDir();
 
 void Ray::pointTo(Point p)
 {
@@ -45,10 +67,10 @@ Point* Ray::cast(Wall wall)
 	// the variables are the same ones from the wikipedia
 
 	// coords for wall
-	const float x1 = wall.a.x;
-	const float y1 = wall.a.y;
-	const float x2 = wall.b.x;
-	const float y2 = wall.b.y;
+	const float x1 = wall.getA().x;
+	const float y1 = wall.getA().y;
+	const float x2 = wall.getB().x;
+	const float y2 = wall.getB().y;
 
 	// coords for ray
 	// x4, y4 are added from the direction of the ray to 

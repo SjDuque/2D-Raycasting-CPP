@@ -7,21 +7,29 @@
 namespace raycast{
 	class Ray 
 	{
-		public:
-
-		// Properties
+		private:
 		Point* pos;
 		float angle;
 
+		public:
 		// Constructors
 		Ray();
-		Ray(Point* p, float angle);
 		Ray(float x, float y, float angle);
+		Ray(Point p, float angle);
+		Ray(Point* p, float angle);
 
-		// Methods
+		// Getters and setters
+		Point getPos();
+		void setPos(Point* p);
+
+		float getAngle();
+		void setAngle(float a);
+
 		float getDirX();
 		float getDirY();
 		Point getDir();
+
+		// Methods
 		void pointTo(Point p);
 		Point* cast(Wall wall);
 	};

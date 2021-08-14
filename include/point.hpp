@@ -2,9 +2,11 @@
 #define POINT_H
 
 namespace raycast{
-	typedef struct Point {
+	class Point {
+		public:
 		float x, y;
-	} Point;
+		float dist(Point p);
+	};
 }
 
 #endif

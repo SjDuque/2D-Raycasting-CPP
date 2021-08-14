@@ -1,5 +1,4 @@
 #include <iostream>
-#include <iostream>
 #include <vector>
 
 #include "ray.hpp"
@@ -12,23 +11,25 @@ int main(void)
 	//--------------------------------------------------------------------------------------
 	const int screenWidth = 800;
 	const int screenHeight = 450;
+	const int targetFPS = 60;
 	InitWindow(screenWidth, screenHeight, "2D Raycasting");
-	SetTargetFPS(60);
+	SetTargetFPS(targetFPS);
 
 
 	// create vector of walls
 	std::vector<raycast::Wall> walls;
 	walls.push_back(raycast::Wall{screenWidth-10, 10, screenWidth-20, screenHeight-100});
+	walls.push_back(raycast::Wall{screenWidth-20, screenHeight-100, 100, screenHeight-10});
+	walls.push_back(raycast::Wall{100, screenHeight-10, screenWidth-10, 10});
 
-	// create array of rays
+	// create vector of rays
 	const int num_rays = 100;
-	raycast::Ray rays[num_rays];
+	std::vector<raycast::Ray> rays;
 	raycast::Point ray_point{10, screenHeight/2};
 
 	for (int a = 0; a < num_rays; a++)
 	{
-		rays[a].pos = &ray_point;
-		rays[a].angle = (2*PI/num_rays)*a;
+		rays.push_back(raycast::Ray{&ray_point, 2*PI/num_rays*a});
 	}
 	// 
 	// Main game loop
@@ -38,26 +39,23 @@ int main(void)
 		//----------------------------------------------------------------------------------
 		// TODO: Update your variables here
 		//----------------------------------------------------------------------------------
-
 		if (IsKeyDown(KEY_UP))
 		{
-			ray_point.y -= 60/GetFPS();
+			ray_point.y -= 60*GetFrameTime();
 		}
 		if (IsKeyDown(KEY_DOWN))
 		{
-			ray_point.y += 60/GetFPS();
+			ray_point.y += 60*GetFrameTime();
 		}
 
 		if (IsKeyDown(KEY_LEFT))
 		{
-			ray_point.x -= 60/GetFPS();
+			ray_point.x -= 60*GetFrameTime();
 		}
 		if (IsKeyDown(KEY_RIGHT))
 		{
-			ray_point.x += 60/GetFPS();
+			ray_point.x += 60*GetFrameTime();
 		}
-		printf("Ray coords: (%f, %f)\n", ray_point.x, ray_point.y);
-
 		// Draw
 		//----------------------------------------------------------------------------------
 		BeginDrawing();
@@ -67,24 +65,35 @@ int main(void)
 			// Draw Walls
 			for (raycast::Wall wall : walls)
 			{
-				DrawLineEx(Vector2{wall.a.x, wall.a.y}, Vector2{wall.b.x, wall.b.y}, 2, WHITE);
+				DrawLineEx(Vector2{wall.getA().x, wall.getA().y}, Vector2{wall.getB().x, wall.getB().y}, 2, GREEN);
 			}			
 			// Draw Rays
-			float length_ray = 200;
-			Vector2 center{rays[0].pos->x, rays[0].pos->y};
+			float length_ray = 100;
+			Vector2 center{rays[0].getPos().x, rays[0].getPos().y};
 			DrawCircleV(center, 5, RED);
 			
 			for (raycast::Ray ray : rays)
-			{
-				Vector2 end_ray{ray.pos->x+ray.getDirX()*length_ray, ray.pos->y+ray.getDirY()*length_ray};
-				DrawLineEx(center, end_ray, 2, RED);;
-			}	
-			// raycast::Point* intersection = ray.cast(wall);
+			{	
+				raycast::Point closest{ray.getPos().x+ray.getDirX()*length_ray, ray.getPos().y+ray.getDirY()*length_ray};
+				float closestDist = length_ray;
+				for (raycast::Wall wall : walls) 
+				{
+					raycast::Point* collision = (ray.cast(wall));
+					if (collision == NULL)
+						continue;
+					
+					float dist = collision->dist(ray.getPos());
 
-			// if (intersection != NULL)
-			// {	
-			// 	DrawCircle(intersection->x, intersection->y, 5, BLUE);
-			// }
+					if(dist < closestDist){
+						closest = *collision;
+						closestDist = dist;
+					}
+				}
+				Vector2 end_ray{closest.x, closest.y};
+				DrawLineEx(center, end_ray, 2, WHITE);;
+			}	
+
+			DrawFPS(10, 10);
 		EndDrawing();
 		//----------------------------------------------------------------------------------
 	}
