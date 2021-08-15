@@ -5,21 +5,29 @@
 #include "ray.hpp"
 #include "raylib.h"
 
+
+const Color rayColor = RED;
+const Color sightColor = WHITE;
+const Color wallColor = GREEN;
+const Color playerColor = BLUE;
+const Color background = BLACK;
 const int screenWidth = 800;
 const int screenHeight = 450;
 const int targetFPS = 60;
 const float lengthRay = 1000;
 const float theta = 0.001; // angle between "subrays"
-bool drawWalls = false;
+
+bool drawWalls = true;
 bool drawShadows = true;
 bool drawRays = true;
+bool drawPlayer = true;
 
 int main(void)
 {
 	// Initialization
 	//--------------------------------------------------------------------------------------
 	InitWindow(screenWidth, screenHeight, "2D Raycasting");
-	// SetTargetFPS(targetFPS);
+	SetTargetFPS(targetFPS);
 
 	// create vector of walls
 	std::vector<raycast::Wall> walls;
@@ -143,7 +151,7 @@ int main(void)
 			if (drawWalls) {
 				for (auto wall : walls)
 				{
-					DrawLineEx(Vector2{wall.getA().x, wall.getA().y}, Vector2{wall.getB().x, wall.getB().y}, 2, GREEN);
+					DrawLineEx(Vector2{wall.getA().x, wall.getA().y}, Vector2{wall.getB().x, wall.getB().y}, 2, wallColor);
 				}	
 			}
 
@@ -155,15 +163,18 @@ int main(void)
 				{
 					Vector2 p1{collisions[i].x, collisions[i].y};
 					Vector2 p2{collisions[(i+1)%collisions.size()].x, collisions[(i+1)%collisions.size()].y};
-					DrawTriangle(p1, center, p2, WHITE);
+					DrawTriangle(p1, center, p2, sightColor);
 				}
 				// Draw the rays as a line segment between the start and point of collision
 				if (drawRays)
 				{
 					Vector2 end_ray{collisions[i].x, collisions[i].y};
-					DrawLineEx(center, end_ray, 2, RED);
+					DrawLineEx(center, end_ray, 2, rayColor);
 				}
 			}
+			
+			if (drawPlayer) 
+				DrawCircleV(center, 4, playerColor);
 
 
 			DrawFPS(10, 10);
