@@ -60,14 +60,6 @@ void Ray::pointTo(Point p)
 }
 
 //---------------------------------
-// Operator overloading
-//---------------------------------
-bool operator<(const Ray& r1, const Ray& r2)
-{
-	return true;
-}
-
-//---------------------------------
 // Methods
 //---------------------------------
 
@@ -107,4 +99,23 @@ Point* Ray::cast(Wall wall)
 	}
 
 	return NULL;
+}
+
+float Ray::cast(Wall wall, float maxDist)
+{
+
+
+	float segX1p = cos(this->angle)*wall.getA().x + -sin(this->angle)*wall.getA().y;/*Matrix rotation of point 1*/
+    float segY1p = sin(this->angle)*wall.getA().x +  cos(this->angle)*wall.getA().y;
+    float segX2p = cos(this->angle)*wall.getB().x + -sin(this->angle)*wall.getB().y;/*Matrix rotation of point 2*/
+    float segY2p = sin(this->angle)*wall.getB().x +  cos(this->angle)*wall.getB().y;
+	
+	if (segY1p*segY2p > 0) return maxDist;
+
+	float dist = -(segY1p*(segX1p-segX2p)/
+				  (segY1p-segY2p) - segX1p);
+	
+	if (dist < 0 || isinf(dist)) return maxDist;
+
+    return dist;
 }

@@ -8,7 +8,11 @@
 const int screenWidth = 800;
 const int screenHeight = 450;
 const int targetFPS = 60;
-const float length_ray = 1000;
+const float lengthRay = 1000;
+const float theta = 0.001; // angle between "subrays"
+bool drawWalls = false;
+bool drawShadows = true;
+bool drawRays = true;
 
 int main(void)
 {
@@ -40,10 +44,10 @@ int main(void)
 		});
 	
 	std::vector<raycast::Wall> barrier = raycast::Wall::createPolygon({
-		raycast::Point{20, 20},
-		raycast::Point{20,  430},
-		raycast::Point{780, 430},
-		raycast::Point{780,  20},
+		raycast::Point{40, 40},
+		raycast::Point{40, screenHeight-40},
+		raycast::Point{screenWidth-40, screenHeight-40},
+		raycast::Point{screenWidth-40,  40},
 		});
 	
 	walls.insert(walls.end(), square.begin(), square.end());
@@ -70,16 +74,19 @@ int main(void)
 		}
 	}
 
-	// create vector of rays
+	// Create vector of rays with the same point
+	// angle will be set later in the game loop
+	raycast::Point ray_point{10, screenHeight/2}; // shared point for rays
 	std::vector<raycast::Ray> rays;
 	rays.reserve(points.size());
-	raycast::Point ray_point{10, screenHeight/2};
 
 	for (int a = 0; a < points.size()*3; a++)
-	{
 		rays.push_back(raycast::Ray{&ray_point, 0});
-	}
-	// 
+
+	// Store all the points of collision
+	std::vector<raycast::Point> collisions;
+	collisions.reserve(rays.size());
+
 	// Main game loop
 	while (!WindowShouldClose())    // Detect window close button or ESC key
 	{
@@ -87,22 +94,47 @@ int main(void)
 		//----------------------------------------------------------------------------------
 		// TODO: Update your variables here
 		//----------------------------------------------------------------------------------
-		// if (IsKeyDown(KEY_UP)) ray_point.y -= move_speed*GetFrameTime();
-		// if (IsKeyDown(KEY_DOWN)) ray_point.y += move_speed*GetFrameTime();
-		// if (IsKeyDown(KEY_LEFT)) ray_point.x -= move_speed*GetFrameTime();
-		// if (IsKeyDown(KEY_RIGHT)) ray_point.x += move_speed*GetFrameTime();
 		
 		// Have rays follow the mouse
 		ray_point.x = GetMouseX();
 		ray_point.y = GetMouseY();
 
+		// Set rays to follow points
 		for (int a = 0; a < points.size()*3; a+=3)
 		{
 			rays[a].pointTo(points[a/3]);
-			rays[a+1].setAngle(rays[a].getAngle()+0.001f);
-			rays[a+2].setAngle(rays[a].getAngle()-0.001f);
+			rays[a+1].setAngle(rays[a].getAngle()+theta);
+			rays[a+2].setAngle(rays[a].getAngle()-theta);
 		}
+		// Sort rays based on their angles
 		std::sort(rays.begin(), rays.end());
+
+		// Empty collisions vector to be used in for loop
+		collisions.clear();
+
+		// Find all the points of collision for the rays
+		for (auto ray : rays)
+		{	
+			// Sets the ray as a line segment of size lengthRay 
+			raycast::Point closest{ray.getPos().x + ray.getDirX()*lengthRay, ray.getPos().y + ray.getDirY()*lengthRay};
+			float closestDist = lengthRay;
+
+			for (auto wall : walls) 
+			{
+				raycast::Point* collision = ray.cast(wall);
+				
+				if (collision == NULL)
+					continue;
+				
+				float dist = collision->dist(ray.getPos());
+
+				if(dist < closestDist){
+					closest = *collision;
+					closestDist = dist;
+				}
+			}
+			collisions.push_back(raycast::Point{closest.x, closest.y});
+		}
 
 		// Draw
 		//----------------------------------------------------------------------------------
@@ -110,45 +142,29 @@ int main(void)
 			ClearBackground(BLACK);
 
 			// Draw Walls
-			for (raycast::Wall wall : walls)
-			{
-				DrawLineEx(Vector2{wall.getA().x, wall.getA().y}, Vector2{wall.getB().x, wall.getB().y}, 2, GREEN);
-			}	
-			// Draw Rays
-			Vector2 center{rays[0].getPos().x, rays[0].getPos().y};
-			// DrawCircleV(center, 5, RED); // for drawing center
-			std::vector<raycast::Point> collisions;
-			collisions.reserve(rays.size());
-
-			for (auto ray : rays)
-			{	
-				raycast::Point closest{ray.getPos().x+ray.getDirX()*length_ray, ray.getPos().y+ray.getDirY()*length_ray};
-				float closestDist = length_ray;
-
-				for (auto wall : walls) 
+			if (drawWalls) {
+				for (auto wall : walls)
 				{
-					raycast::Point* collision = (ray.cast(wall));
-					
-					if (collision == NULL)
-						continue;
-					
-					float dist = collision->dist(ray.getPos());
-
-					if(dist < closestDist){
-						closest = *collision;
-						closestDist = dist;
-					}
-				}
-
-				collisions.push_back(raycast::Point{closest.x, closest.y});
+					DrawLineEx(Vector2{wall.getA().x, wall.getA().y}, Vector2{wall.getB().x, wall.getB().y}, 2, GREEN);
+				}	
 			}
+
+			Vector2 center{rays[0].getPos().x, rays[0].getPos().y};
 			for (int i = 0; i < collisions.size(); i++)
 			{
-				Vector2 p1{collisions[i].x, collisions[i].y};
-				Vector2 p2{collisions[(i+1)%collisions.size()].x, collisions[(i+1)%collisions.size()].y};
-				DrawTriangle(p1, center, p2, WHITE);
-				Vector2 end_ray{collisions[i].x, collisions[i].y};
-				DrawLineEx(center, end_ray, 2, RED);
+				// Draw the triangles made from the collision points in counterclockwise order
+				if (drawShadows)
+				{
+					Vector2 p1{collisions[i].x, collisions[i].y};
+					Vector2 p2{collisions[(i+1)%collisions.size()].x, collisions[(i+1)%collisions.size()].y};
+					DrawTriangle(p1, center, p2, WHITE);
+				}
+				// Draw the rays as a line segment between the start and point of collision
+				if (drawRays)
+				{
+					Vector2 end_ray{collisions[i].x, collisions[i].y};
+					DrawLineEx(center, end_ray, 2, RED);
+				}
 			}
 
 
