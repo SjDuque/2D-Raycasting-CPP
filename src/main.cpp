@@ -19,7 +19,7 @@ const float theta = 0.001; // angle between "subrays"
 
 bool drawWalls = true;
 bool drawShadows = true;
-bool drawRays = true;
+bool drawRays = false;
 bool drawPlayer = true;
 
 int main(void)
@@ -47,8 +47,8 @@ int main(void)
 	std::vector<raycast::Wall> trapezoid = raycast::Wall::createPolygon({
 		raycast::Point{500, 200},
 		raycast::Point{600,  200},
-		raycast::Point{750, 400},
-		raycast::Point{400,  400},
+		raycast::Point{750, 350},
+		raycast::Point{400,  350},
 		});
 	
 	std::vector<raycast::Wall> barrier = raycast::Wall::createPolygon({
@@ -59,7 +59,7 @@ int main(void)
 		});
 
 	std::vector<raycast::Wall> circle = raycast::Wall::createCircle(
-		raycast::Point{150, 350}, 50, 10
+		raycast::Point{150, 350}, 50, 100
 		);
 	
 	walls.insert(walls.end(), square.begin(), square.end());
