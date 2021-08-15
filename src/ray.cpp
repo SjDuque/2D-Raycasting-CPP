@@ -9,6 +9,9 @@ using namespace raycast;
 Ray::Ray()
 	: pos(new Point{0, 0}), angle(0) {}
 
+Ray::Ray(Point p, float angle)
+	: pos(new Point{p.x, p.y}), angle(angle) {}
+
 Ray::Ray(Point* p, float angle)
 	: pos(p), angle(angle) {}
 

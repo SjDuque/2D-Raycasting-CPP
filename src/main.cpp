@@ -7,7 +7,7 @@
 const int screenWidth = 800;
 const int screenHeight = 450;
 const int targetFPS = 60;
-const int num_rays = 100;
+const float length_ray = 1000;
 
 int main(void)
 {
@@ -15,7 +15,6 @@ int main(void)
 	//--------------------------------------------------------------------------------------
 	InitWindow(screenWidth, screenHeight, "2D Raycasting");
 	SetTargetFPS(targetFPS);
-
 
 	// create vector of walls
 	std::vector<raycast::Wall> walls;
@@ -39,20 +38,45 @@ int main(void)
 		raycast::Point{400,  400},
 		});
 	
+	std::vector<raycast::Wall> barrier = raycast::Wall::createPolygon({
+		raycast::Point{20, 20},
+		raycast::Point{20,  430},
+		raycast::Point{780, 430},
+		raycast::Point{780,  20},
+		});
+	
 	walls.insert(walls.end(), square.begin(), square.end());
 	walls.insert(walls.end(), triangle.begin(), triangle.end());
 	walls.insert(walls.end(), trapezoid.begin(), trapezoid.end());
+	walls.insert(walls.end(), barrier.begin(), barrier.end());
 
-	std::cout << "length: " << walls.size() << std::endl;
+
+	// Add all points to the points vector
+	std::vector<raycast::Point> points;
+	for (raycast::Wall wall : walls)
+	{
+		points.push_back(wall.getA());
+		points.push_back(wall.getB());
+	}
+
+	// Remove duplicates from the point vector
+	for (int i = 0; i < points.size(); i++)
+	{
+		for (int j = i+1; j < points.size(); j++)
+		{
+			if (points[i].x == points[j].x && points[i].y == points[j].y)
+				points.erase(points.begin() + j);
+		}
+	}
 
 	// create vector of rays
 	std::vector<raycast::Ray> rays;
-	rays.reserve(num_rays);
+	rays.reserve(points.size());
 	raycast::Point ray_point{10, screenHeight/2};
 
-	for (int a = 0; a < num_rays; a++)
+	for (int a = 0; a < points.size()*3; a++)
 	{
-		rays.push_back(raycast::Ray{&ray_point, 2*PI/num_rays*a});
+		rays.push_back(raycast::Ray{&ray_point, 0});
 	}
 	// 
 	// Main game loop
@@ -67,6 +91,12 @@ int main(void)
 		// if (IsKeyDown(KEY_LEFT)) ray_point.x -= move_speed*GetFrameTime();
 		// if (IsKeyDown(KEY_RIGHT)) ray_point.x += move_speed*GetFrameTime();
 
+		for (int a = 0; a < points.size()*3; a+=3)
+		{
+			rays[a].pointTo(points[a/3]);
+			rays[a+1].setAngle(rays[a].getAngle()+0.1);
+			rays[a+2].setAngle(rays[a].getAngle()-0.1);
+		}
 		// Have rays follow the mouse
 		ray_point.x = GetMouseX();
 		ray_point.y = GetMouseY();
@@ -83,10 +113,9 @@ int main(void)
 				DrawLineEx(Vector2{wall.getA().x, wall.getA().y}, Vector2{wall.getB().x, wall.getB().y}, 2, GREEN);
 			}	
 			// Draw Rays
-			float length_ray = 100;
 			Vector2 center{rays[0].getPos().x, rays[0].getPos().y};
 			// DrawCircleV(center, 5, RED); // for drawing center
-			
+			std::vector<raycast::Point> collisions;
 			for (raycast::Ray ray : rays)
 			{	
 				raycast::Point closest{ray.getPos().x+ray.getDirX()*length_ray, ray.getPos().y+ray.getDirY()*length_ray};
@@ -104,9 +133,19 @@ int main(void)
 						closestDist = dist;
 					}
 				}
+				collisions.push_back(raycast::Point{closest.x, closest.y});
 				Vector2 end_ray{closest.x, closest.y};
-				DrawLineEx(center, end_ray, 2, WHITE);;
-			}	
+				DrawLineEx(center, end_ray, 2, WHITE);
+			}
+			printf("Collisions size: %i\n", collisions.size());
+			printf("Rays size: %i\n\n", rays.size());
+			for (int i = 0; i < collisions.size(); i++)
+			{
+				Vector2 p1{collisions[i].x, collisions[i].y};
+				Vector2 p2{collisions[(i+1)%points.size()].x, collisions[(i+1)%points.size()].y};
+				DrawTriangle(p1, center, p2, WHITE);
+			}
+
 
 			DrawFPS(10, 10);
 		EndDrawing();
