@@ -17,9 +17,9 @@ const int targetFPS = 60;
 const float lengthRay = 1000;
 const float theta = 0.001; // angle between "subrays"
 
-bool drawEndPoints = false;
+bool drawWalls = true;
 bool drawShadows = true;
-bool drawRays = false;
+bool drawRays = true;
 bool drawPlayer = true;
 
 int main(void)
@@ -81,15 +81,12 @@ int main(void)
 	// Create vector of rays with the same point
 	// angle will be set later in the game loop
 	raycast::Point ray_point{10, screenHeight/2}; // shared point for rays
-	std::vector<raycast::Ray> rays;
-	rays.reserve(endPoints.size()*3);
-
-	for (int a = 0; a < endPoints.size()*3; a++)
-		rays.push_back(raycast::Ray{&ray_point, 0});
+	std::vector<raycast::RayEndPoint> rayEndPoints;
+	rayEndPoints.reserve(endPoints.size());
 
 	// Store all the points of collision
 	std::vector<raycast::Point> collisions;
-	collisions.reserve(rays.size());
+	collisions.reserve(rayEndPoints.size());
 
 	// Main game loop
 	while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -103,24 +100,27 @@ int main(void)
 		ray_point.x = GetMouseX();
 		ray_point.y = GetMouseY();
 
+
+		rayEndPoints.clear();
 		// Set rays to follow points
-		for (int a = 0; a < endPoints.size()*3; a+=3)
-		{
-			rays[a].pointTo(endPoints[a/3].getPos());
-			rays[a+1].setAngle(rays[a].getAngle()+theta);
-			rays[a+2].setAngle(rays[a].getAngle()-theta);
+		for (int i = 0; i < endPoints.size(); i+=3)
+		{	
+			auto ray = new raycast::Ray{ray_point, 0};
+			ray->pointTo(endPoints[i].getPos());
+			rayEndPoints.push_back(raycast::RayEndPoint{ray, &endPoints[i]});
 		}
 		// Sort rays based on their angles
-		std::sort(rays.begin(), rays.end());
+		std::sort(rayEndPoints.begin(), rayEndPoints.end());
 
 		// Empty collisions vector to be used in for loop
 		collisions.clear();
 
 		// Find all the points of collision for the rays
-		for (auto ray : rays)
+		for (auto rayEndPoint : rayEndPoints)
 		{	
 			// Sets the ray as a line segment of size lengthRay 
 			float closestDist = lengthRay;
+			auto ray = *rayEndPoint.ray;
 
 			for (auto endPoint : endPoints) 
 			{
@@ -144,14 +144,14 @@ int main(void)
 			ClearBackground(BLACK);
 
 			// Draw EndPoints
-			if (drawEndPoints) {
+			if (drawWalls) {
 				for (auto endPoint : endPoints)
 				{
 					DrawLineEx(Vector2{endPoint.getX(), endPoint.getY()}, Vector2{endPoint.getOtherX(), endPoint.getOtherY()}, 2, endPointColor);
 				}	
 			}
 
-			Vector2 center{rays[0].getPos().x, rays[0].getPos().y};
+			Vector2 center{ray_point.x, ray_point.y};
 			for (int i = 0; i < collisions.size(); i++)
 			{
 				// Draw the triangles made from the collision points
