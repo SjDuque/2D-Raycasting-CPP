@@ -1,12 +1,16 @@
 #ifndef RAY_END_POINT_H
 #define RAY_END_POINT_H
 
-#include <ray.hpp>
-#include <end_point.hpp>
+#include "ray.hpp"
 
 namespace raycast{
-	typedef struct RayEndPoint{
-	} RayEndPoint;
+	class RayEndPoint{
+		public:
+		EndPoint* endPoint;
+		Ray* ray;
+		float dist;
+		RayEndPoint(Ray* ray, EndPoint* endPoint);
+	};
 }
 
 #endif

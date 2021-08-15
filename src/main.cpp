@@ -68,31 +68,23 @@ int main(void)
 	endPoints.insert(endPoints.end(), barrier.begin(), barrier.end());
 	endPoints.insert(endPoints.end(), circle.begin(), circle.end());
 
-	// Add all points to the points vector
-	std::vector<raycast::Point> points;
-	for (raycast::EndPoint endPoint : endPoints)
-	{
-		points.push_back(endPoint.getPos());
-		points.push_back(endPoint.getOtherPos());
-	}
-
-	// Remove duplicates from the point vector
-	for (int i = 0; i < points.size(); i++)
-	{
-		for (int j = i+1; j < points.size(); j++)
-		{
-			if (points[i].x == points[j].x && points[i].y == points[j].y)
-				points.erase(points.begin() + j);
-		}
-	}
+	// // Remove duplicates from the point vector
+	// for (int i = 0; i < endPoints.size(); i++)
+	// {
+	// 	for (int j = i+1; j < endPoints.size(); j++)
+	// 	{
+	// 		if (endPoints[i].getX() == endPoints[j].getX() && endPoints[i].getY() == endPoints[j].getY())
+	// 			endPoints.erase(endPoints.begin() + j);
+	// 	}
+	// }
 
 	// Create vector of rays with the same point
 	// angle will be set later in the game loop
 	raycast::Point ray_point{10, screenHeight/2}; // shared point for rays
 	std::vector<raycast::Ray> rays;
-	rays.reserve(points.size()*3);
+	rays.reserve(endPoints.size()*3);
 
-	for (int a = 0; a < points.size()*3; a++)
+	for (int a = 0; a < endPoints.size()*3; a++)
 		rays.push_back(raycast::Ray{&ray_point, 0});
 
 	// Store all the points of collision
@@ -112,9 +104,9 @@ int main(void)
 		ray_point.y = GetMouseY();
 
 		// Set rays to follow points
-		for (int a = 0; a < points.size()*3; a+=3)
+		for (int a = 0; a < endPoints.size()*3; a+=3)
 		{
-			rays[a].pointTo(points[a/3]);
+			rays[a].pointTo(endPoints[a/3].getPos());
 			rays[a+1].setAngle(rays[a].getAngle()+theta);
 			rays[a+2].setAngle(rays[a].getAngle()-theta);
 		}

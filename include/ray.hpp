@@ -2,7 +2,6 @@
 #define RAY_H
 
 #include "end_point.hpp"
-#include "ray_end_point.hpp"
 
 namespace raycast{
 	class Ray 
