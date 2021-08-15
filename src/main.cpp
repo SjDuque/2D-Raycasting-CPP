@@ -19,7 +19,7 @@ int main(void)
 	// Initialization
 	//--------------------------------------------------------------------------------------
 	InitWindow(screenWidth, screenHeight, "2D Raycasting");
-	SetTargetFPS(targetFPS);
+	// SetTargetFPS(targetFPS);
 
 	// create vector of walls
 	std::vector<raycast::Wall> walls;
@@ -116,24 +116,22 @@ int main(void)
 		for (auto ray : rays)
 		{	
 			// Sets the ray as a line segment of size lengthRay 
-			raycast::Point closest{ray.getPos().x + ray.getDirX()*lengthRay, ray.getPos().y + ray.getDirY()*lengthRay};
 			float closestDist = lengthRay;
 
 			for (auto wall : walls) 
 			{
 				raycast::Point* collision = ray.cast(wall);
-				
+
 				if (collision == NULL)
 					continue;
-				
-				float dist = collision->dist(ray.getPos());
 
-				if(dist < closestDist){
-					closest = *collision;
+				float dist = collision->dist(ray.getPos());
+				// float dist = ray.cast(wall, lengthRay);
+
+				if(dist < closestDist) 
 					closestDist = dist;
-				}
 			}
-			collisions.push_back(raycast::Point{closest.x, closest.y});
+			collisions.push_back(raycast::Point{ray.getPos().x + ray.getDirX()*closestDist, ray.getPos().y + ray.getDirY()*closestDist});
 		}
 
 		// Draw

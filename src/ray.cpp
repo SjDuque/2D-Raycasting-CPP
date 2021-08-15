@@ -103,16 +103,21 @@ Point* Ray::cast(Wall wall)
 
 float Ray::cast(Wall wall, float maxDist)
 {
+	const float a = -this->angle;
+	const float x1 = wall.getA().x - this->getPos().x;
+	const float y1 = wall.getA().y - this->getPos().y;
+	const float x2 = wall.getB().x - this->getPos().x;
+	const float y2 = wall.getB().y - this->getPos().y;
 
-
-	float segX1p = cos(this->angle)*wall.getA().x + -sin(this->angle)*wall.getA().y;/*Matrix rotation of point 1*/
-    float segY1p = sin(this->angle)*wall.getA().x +  cos(this->angle)*wall.getA().y;
-    float segX2p = cos(this->angle)*wall.getB().x + -sin(this->angle)*wall.getB().y;/*Matrix rotation of point 2*/
-    float segY2p = sin(this->angle)*wall.getB().x +  cos(this->angle)*wall.getB().y;
+	float segX1p = cos(a)*x1 + -sin(a)*y1;/*Matrix rotation of point 1*/
+    float segY1p = sin(a)*x1 +  cos(a)*y1;
+    float segX2p = cos(a)*x2 + -sin(a)*y2;/*Matrix rotation of point 2*/
+    float segY2p = sin(a)*x2 +  cos(a)*y2;
 	
+
 	if (segY1p*segY2p > 0) return maxDist;
 
-	float dist = -(segY1p*(segX1p-segX2p)/
+	float dist = -(segY1p * (segX1p-segX2p)/
 				  (segY1p-segY2p) - segX1p);
 	
 	if (dist < 0 || isinf(dist)) return maxDist;
