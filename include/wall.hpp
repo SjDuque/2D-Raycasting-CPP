@@ -21,6 +21,7 @@ namespace raycast{
 		Point getB();
 
 		static std::vector<Wall> createPolygon(std::vector<Point> points);
+		static std::vector<Wall> createCircle(Point center, int radius, int sides);
 	};
 }
 

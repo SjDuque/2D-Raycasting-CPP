@@ -1,4 +1,5 @@
 #include "wall.hpp"
+#include "math.h"
 
 using namespace raycast;
 
@@ -39,6 +40,28 @@ std::vector<Wall> Wall::createPolygon(std::vector<Point> points)
 	for (int i = 0; i < points.size(); i++)
 	{
 		sides.push_back(Wall{points[i], points[(i+1)%points.size()]});
+	}
+
+	return sides;
+}
+std::vector<Wall> Wall::createCircle(Point center, const int radius, const int numSides)
+{
+	std::vector<Point> circlePoints;
+	circlePoints.reserve(numSides);
+	for (int i = 0; i < numSides; i++)
+	{
+		float a = 2*M_PI/numSides*i;
+		float x = center.x + radius * cos(a);
+		float y = center.y + radius * sin(a);
+		circlePoints.push_back(raycast::Point{x, y});
+	}
+
+	std::vector<Wall> sides;
+	sides.reserve(numSides);
+
+	for (int i = 0; i < numSides; i++)
+	{
+		sides.push_back(Wall{circlePoints[i], circlePoints[(i+1)%numSides]});
 	}
 
 	return sides;

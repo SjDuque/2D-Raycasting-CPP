@@ -1,4 +1,5 @@
 #include "point.hpp"
+#include "math.h"
 
 using namespace raycast;
 

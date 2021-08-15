@@ -57,12 +57,16 @@ int main(void)
 		raycast::Point{screenWidth-40, screenHeight-40},
 		raycast::Point{screenWidth-40,  40},
 		});
+
+	std::vector<raycast::Wall> circle = raycast::Wall::createCircle(
+		raycast::Point{150, 350}, 50, 10
+		);
 	
 	walls.insert(walls.end(), square.begin(), square.end());
 	walls.insert(walls.end(), triangle.begin(), triangle.end());
 	walls.insert(walls.end(), trapezoid.begin(), trapezoid.end());
 	walls.insert(walls.end(), barrier.begin(), barrier.end());
-
+	walls.insert(walls.end(), circle.begin(), circle.end());
 
 	// Add all points to the points vector
 	std::vector<raycast::Point> points;
@@ -86,7 +90,7 @@ int main(void)
 	// angle will be set later in the game loop
 	raycast::Point ray_point{10, screenHeight/2}; // shared point for rays
 	std::vector<raycast::Ray> rays;
-	rays.reserve(points.size());
+	rays.reserve(points.size()*3);
 
 	for (int a = 0; a < points.size()*3; a++)
 		rays.push_back(raycast::Ray{&ray_point, 0});
@@ -128,13 +132,13 @@ int main(void)
 
 			for (auto wall : walls) 
 			{
-				raycast::Point* collision = ray.cast(wall);
+				// raycast::Point* collision = ray.cast(wall);
 
-				if (collision == NULL)
-					continue;
+				// if (collision == NULL)
+				// 	continue;
 
-				float dist = collision->dist(ray.getPos());
-				// float dist = ray.cast(wall, lengthRay);
+				// float dist = collision->dist(ray.getPos());
+				float dist = ray.cast(wall, lengthRay);
 
 				if(dist < closestDist) 
 					closestDist = dist;

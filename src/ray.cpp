@@ -1,4 +1,5 @@
 #include "ray.hpp"
+#include "math.h"
 
 using namespace raycast;
 
