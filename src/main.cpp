@@ -82,7 +82,7 @@ int main(void)
 	// angle will be set later in the game loop
 	raycast::Point ray_point{10, screenHeight/2}; // shared point for rays
 	std::vector<raycast::RayEndPoint> rayEndPoints;
-	rayEndPoints.reserve(endPoints.size());
+	rayEndPoints.reserve(endPoints.size()*2);
 
 	// Store all the points of collision
 	std::vector<raycast::Point> collisions;
@@ -103,11 +103,14 @@ int main(void)
 
 		rayEndPoints.clear();
 		// Set rays to follow points
-		for (int i = 0; i < endPoints.size(); i+=3)
+		for (int i = 0; i < endPoints.size(); i++)
 		{	
-			auto ray = new raycast::Ray{ray_point, 0};
-			ray->pointTo(endPoints[i].getPos());
-			rayEndPoints.push_back(raycast::RayEndPoint{ray, &endPoints[i]});
+			auto ray1 = new raycast::Ray{ray_point, 0};
+			// auto ray2 = new raycast::Ray{ray_point, 0};
+			ray1->pointTo(endPoints[i].getPos());
+			// ray2->pointTo(endPoints[i].getOtherPos());
+			rayEndPoints.push_back(raycast::RayEndPoint{ray1, &endPoints[i]});
+			// rayEndPoints.push_back(raycast::RayEndPoint{ray2, endPoints[i].getOtherPtr()});
 		}
 		// Sort rays based on their angles
 		std::sort(rayEndPoints.begin(), rayEndPoints.end());
