@@ -2,10 +2,13 @@
 
 Simple raycasting program made in C++.
 
-Raylib was used to draw to the screen.
+
+
+https://user-images.githubusercontent.com/29150631/129477305-934d7be3-4de2-49d4-a3e7-fdceb33d7b6f.mp4
+
+
 
 *Although I recommend installing Raylib through a package manager, this project doesn't require you to have raylib installed at all. In the event that CMake cannot find Raylib, it'll automatically install everything you need into the project's build directory.*
-
 ## Downloading
 
 You can either use `git`, `curl`, or `wget` to download the repository.
