@@ -31,6 +31,12 @@ namespace raycast{
 		// Methods
 		void pointTo(Point p);
 		Point* cast(Wall wall);
+
+		// Operator overloading
+		friend bool operator<(const Ray& r1, const Ray& r2)
+		{
+			return r1.angle < r2.angle;
+		}
 	};
 }
 

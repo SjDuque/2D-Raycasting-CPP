@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>    // std::sort
 
 #include "ray.hpp"
 #include "raylib.h"
@@ -90,16 +91,18 @@ int main(void)
 		// if (IsKeyDown(KEY_DOWN)) ray_point.y += move_speed*GetFrameTime();
 		// if (IsKeyDown(KEY_LEFT)) ray_point.x -= move_speed*GetFrameTime();
 		// if (IsKeyDown(KEY_RIGHT)) ray_point.x += move_speed*GetFrameTime();
+		
+		// Have rays follow the mouse
+		ray_point.x = GetMouseX();
+		ray_point.y = GetMouseY();
 
 		for (int a = 0; a < points.size()*3; a+=3)
 		{
 			rays[a].pointTo(points[a/3]);
-			rays[a+1].setAngle(rays[a].getAngle()+0.1);
-			rays[a+2].setAngle(rays[a].getAngle()-0.1);
+			rays[a+1].setAngle(rays[a].getAngle()+0.001f);
+			rays[a+2].setAngle(rays[a].getAngle()-0.001f);
 		}
-		// Have rays follow the mouse
-		ray_point.x = GetMouseX();
-		ray_point.y = GetMouseY();
+		std::sort(rays.begin(), rays.end());
 
 		// Draw
 		//----------------------------------------------------------------------------------
@@ -109,20 +112,23 @@ int main(void)
 			// Draw Walls
 			for (raycast::Wall wall : walls)
 			{
-				// printf("Point A: (%f, %f)\nPoint B: (%f, %f)\n", wall.getA().x, wall.getA().y, wall.getB().x, wall.getB().y);
 				DrawLineEx(Vector2{wall.getA().x, wall.getA().y}, Vector2{wall.getB().x, wall.getB().y}, 2, GREEN);
 			}	
 			// Draw Rays
 			Vector2 center{rays[0].getPos().x, rays[0].getPos().y};
 			// DrawCircleV(center, 5, RED); // for drawing center
 			std::vector<raycast::Point> collisions;
-			for (raycast::Ray ray : rays)
+			collisions.reserve(rays.size());
+
+			for (auto ray : rays)
 			{	
 				raycast::Point closest{ray.getPos().x+ray.getDirX()*length_ray, ray.getPos().y+ray.getDirY()*length_ray};
 				float closestDist = length_ray;
-				for (raycast::Wall wall : walls) 
+
+				for (auto wall : walls) 
 				{
 					raycast::Point* collision = (ray.cast(wall));
+					
 					if (collision == NULL)
 						continue;
 					
@@ -133,17 +139,16 @@ int main(void)
 						closestDist = dist;
 					}
 				}
+
 				collisions.push_back(raycast::Point{closest.x, closest.y});
-				Vector2 end_ray{closest.x, closest.y};
-				DrawLineEx(center, end_ray, 2, WHITE);
 			}
-			printf("Collisions size: %i\n", collisions.size());
-			printf("Rays size: %i\n\n", rays.size());
 			for (int i = 0; i < collisions.size(); i++)
 			{
 				Vector2 p1{collisions[i].x, collisions[i].y};
-				Vector2 p2{collisions[(i+1)%points.size()].x, collisions[(i+1)%points.size()].y};
+				Vector2 p2{collisions[(i+1)%collisions.size()].x, collisions[(i+1)%collisions.size()].y};
 				DrawTriangle(p1, center, p2, WHITE);
+				Vector2 end_ray{collisions[i].x, collisions[i].y};
+				DrawLineEx(center, end_ray, 2, RED);
 			}
 
 

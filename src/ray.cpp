@@ -59,6 +59,18 @@ void Ray::pointTo(Point p)
 	this->angle = atan2(p.y-this->pos->y, p.x-this->pos->x);
 }
 
+//---------------------------------
+// Operator overloading
+//---------------------------------
+bool operator<(const Ray& r1, const Ray& r2)
+{
+	return true;
+}
+
+//---------------------------------
+// Methods
+//---------------------------------
+
 Point* Ray::cast(Wall wall)
 {
 	// shamelessly using algorithm from wikipedia
