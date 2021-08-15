@@ -8,7 +8,7 @@
 
 const Color rayColor = RED;
 const Color sightColor = WHITE;
-const Color wallColor = GREEN;
+const Color endPointColor = GREEN;
 const Color playerColor = BLUE;
 const Color background = BLACK;
 const int screenWidth = 800;
@@ -17,7 +17,7 @@ const int targetFPS = 60;
 const float lengthRay = 1000;
 const float theta = 0.001; // angle between "subrays"
 
-bool drawWalls = true;
+bool drawEndPoints = false;
 bool drawShadows = true;
 bool drawRays = false;
 bool drawPlayer = true;
@@ -27,53 +27,53 @@ int main(void)
 	// Initialization
 	//--------------------------------------------------------------------------------------
 	InitWindow(screenWidth, screenHeight, "2D Raycasting");
-	SetTargetFPS(targetFPS);
+	// SetTargetFPS(targetFPS);
 
-	// create vector of walls
-	std::vector<raycast::Wall> walls;
-	std::vector<raycast::Wall> square = raycast::Wall::createPolygon({
+	// create vector of endPoints
+	std::vector<raycast::EndPoint> endPoints;
+	std::vector<raycast::EndPoint> square = raycast::EndPoint::createPolygon({
 		raycast::Point{50, 50},
 		raycast::Point{50,  100},
 		raycast::Point{100,  100},
 		raycast::Point{100,  50},
 		});
 	
-	std::vector<raycast::Wall> triangle = raycast::Wall::createPolygon({
+	std::vector<raycast::EndPoint> triangle = raycast::EndPoint::createPolygon({
 		raycast::Point{200, 70},
 		raycast::Point{400,  200},
 		raycast::Point{200,  300},
 		});
 	
-	std::vector<raycast::Wall> trapezoid = raycast::Wall::createPolygon({
+	std::vector<raycast::EndPoint> trapezoid = raycast::EndPoint::createPolygon({
 		raycast::Point{500, 200},
 		raycast::Point{600,  200},
 		raycast::Point{750, 350},
 		raycast::Point{400,  350},
 		});
 	
-	std::vector<raycast::Wall> barrier = raycast::Wall::createPolygon({
+	std::vector<raycast::EndPoint> barrier = raycast::EndPoint::createPolygon({
 		raycast::Point{40, 40},
 		raycast::Point{40, screenHeight-40},
 		raycast::Point{screenWidth-40, screenHeight-40},
 		raycast::Point{screenWidth-40,  40},
 		});
 
-	std::vector<raycast::Wall> circle = raycast::Wall::createCircle(
+	std::vector<raycast::EndPoint> circle = raycast::EndPoint::createCircle(
 		raycast::Point{150, 350}, 50, 100
 		);
 	
-	walls.insert(walls.end(), square.begin(), square.end());
-	walls.insert(walls.end(), triangle.begin(), triangle.end());
-	walls.insert(walls.end(), trapezoid.begin(), trapezoid.end());
-	walls.insert(walls.end(), barrier.begin(), barrier.end());
-	walls.insert(walls.end(), circle.begin(), circle.end());
+	endPoints.insert(endPoints.end(), square.begin(), square.end());
+	endPoints.insert(endPoints.end(), triangle.begin(), triangle.end());
+	endPoints.insert(endPoints.end(), trapezoid.begin(), trapezoid.end());
+	endPoints.insert(endPoints.end(), barrier.begin(), barrier.end());
+	endPoints.insert(endPoints.end(), circle.begin(), circle.end());
 
 	// Add all points to the points vector
 	std::vector<raycast::Point> points;
-	for (raycast::Wall wall : walls)
+	for (raycast::EndPoint endPoint : endPoints)
 	{
-		points.push_back(wall.getA());
-		points.push_back(wall.getB());
+		points.push_back(endPoint.getPos());
+		points.push_back(endPoint.getOtherPos());
 	}
 
 	// Remove duplicates from the point vector
@@ -130,20 +130,20 @@ int main(void)
 			// Sets the ray as a line segment of size lengthRay 
 			float closestDist = lengthRay;
 
-			for (auto wall : walls) 
+			for (auto endPoint : endPoints) 
 			{
-				// raycast::Point* collision = ray.cast(wall);
+				// raycast::Point* collision = ray.cast(endPoint);
 
 				// if (collision == NULL)
 				// 	continue;
 
 				// float dist = collision->dist(ray.getPos());
-				float dist = ray.cast(wall, lengthRay);
+				float dist = ray.cast(endPoint, lengthRay);
 
 				if(dist < closestDist) 
 					closestDist = dist;
 			}
-			collisions.push_back(raycast::Point{ray.getPos().x + ray.getDirX()*closestDist, ray.getPos().y + ray.getDirY()*closestDist});
+			collisions.push_back(raycast::Point{ray.getX() + ray.getDirX()*closestDist, ray.getY() + ray.getDirY()*closestDist});
 		}
 
 		// Draw
@@ -151,18 +151,18 @@ int main(void)
 		BeginDrawing();
 			ClearBackground(BLACK);
 
-			// Draw Walls
-			if (drawWalls) {
-				for (auto wall : walls)
+			// Draw EndPoints
+			if (drawEndPoints) {
+				for (auto endPoint : endPoints)
 				{
-					DrawLineEx(Vector2{wall.getA().x, wall.getA().y}, Vector2{wall.getB().x, wall.getB().y}, 2, wallColor);
+					DrawLineEx(Vector2{endPoint.getX(), endPoint.getY()}, Vector2{endPoint.getOtherX(), endPoint.getOtherY()}, 2, endPointColor);
 				}	
 			}
 
 			Vector2 center{rays[0].getPos().x, rays[0].getPos().y};
 			for (int i = 0; i < collisions.size(); i++)
 			{
-				// Draw the triangles made from the collision points in counterclockwise order
+				// Draw the triangles made from the collision points
 				if (drawShadows)
 				{
 					Vector2 p1{collisions[i].x, collisions[i].y};

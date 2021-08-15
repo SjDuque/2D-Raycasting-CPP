@@ -23,9 +23,22 @@ Ray::Ray(float x, float y, float angle)
 // Getters and setters
 //---------------------------------
 
+float Ray::getX(){
+	return this->pos->x;
+}
+
+float Ray::getY(){
+	return this->pos->y;
+}
+
 Point Ray::getPos(){
 	return *this->pos;
 }
+
+Point* Ray::getPosPtr(){
+	return this->pos;
+}
+
 void Ray::setPos(Point* p){
 	this->pos = p;
 }
@@ -64,24 +77,24 @@ void Ray::pointTo(Point p)
 // Methods
 //---------------------------------
 
-Point* Ray::cast(Wall wall)
+Point* Ray::cast(EndPoint endPoint)
 {
 	// shamelessly using algorithm from wikipedia
 	// https://en.wikipedia.org/wiki/Line–line_intersection
 	
 	// the variables are the same ones from the wikipedia
 
-	// coords for wall
-	const float x1 = wall.getA().x;
-	const float y1 = wall.getA().y;
-	const float x2 = wall.getB().x;
-	const float y2 = wall.getB().y;
+	// coords for endPoint
+	const float x1 = endPoint.getX();
+	const float y1 = endPoint.getY();
+	const float x2 = endPoint.getOtherX();
+	const float y2 = endPoint.getOtherY();
 
 	// coords for ray
 	// x4, y4 are added from the direction of the ray to 
 	// make a line segment projected from the ray
-	const float x3 = this->pos->x;
-	const float y3 = this->pos->y;
+	const float x3 = this->getX();
+	const float y3 = this->getY();
 	const float x4 = x3 + cosf(this->angle);
 	const float y4 = y3 + sinf(this->angle);
 	
@@ -102,18 +115,18 @@ Point* Ray::cast(Wall wall)
 	return NULL;
 }
 
-float Ray::cast(Wall wall, float maxDist)
+float Ray::cast(EndPoint endPoint, float maxDist=1000)
 {
 	const float a = -this->angle;
-	const float x1 = wall.getA().x - this->getPos().x;
-	const float y1 = wall.getA().y - this->getPos().y;
-	const float x2 = wall.getB().x - this->getPos().x;
-	const float y2 = wall.getB().y - this->getPos().y;
+	const float x1 = endPoint.getX() - this->getX();
+	const float y1 = endPoint.getY() - this->getY();
+	const float x2 = endPoint.getOtherX() - this->getX();
+	const float y2 = endPoint.getOtherY() - this->getY();
 
-	float segX1p = cos(a)*x1 + -sin(a)*y1;/*Matrix rotation of point 1*/
-    float segY1p = sin(a)*x1 +  cos(a)*y1;
-    float segX2p = cos(a)*x2 + -sin(a)*y2;/*Matrix rotation of point 2*/
-    float segY2p = sin(a)*x2 +  cos(a)*y2;
+	const float segX1p = cos(a)*x1 + -sin(a)*y1;/*Matrix rotation of point 1*/
+    const float segY1p = sin(a)*x1 +  cos(a)*y1;
+    const float segX2p = cos(a)*x2 + -sin(a)*y2;/*Matrix rotation of point 2*/
+    const float segY2p = sin(a)*x2 +  cos(a)*y2;
 	
 
 	if (segY1p*segY2p > 0) return maxDist;

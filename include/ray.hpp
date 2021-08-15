@@ -1,7 +1,8 @@
 #ifndef RAY_H
 #define RAY_H
 
-#include "wall.hpp"
+#include "end_point.hpp"
+#include "ray_end_point.hpp"
 
 namespace raycast{
 	class Ray 
@@ -18,7 +19,10 @@ namespace raycast{
 		Ray(Point* p, float angle);
 
 		// Getters and setters
+		float getX();
+		float getY();
 		Point getPos();
+		Point* getPosPtr();
 		void setPos(Point* p);
 
 		float getAngle();
@@ -30,8 +34,8 @@ namespace raycast{
 
 		// Methods
 		void pointTo(Point p);
-		Point* cast(Wall wall);
-		float cast(Wall wall, const float maxDist);
+		Point* cast(EndPoint endPoint);
+		float cast(EndPoint endPoint, const float maxDist);
 
 		// Operator overloading
 		friend bool operator<(const Ray& r1, const Ray& r2) { return r1.angle < r2.angle; }
