@@ -68,25 +68,28 @@ int main(void)
 	endPoints.insert(endPoints.end(), barrier.begin(), barrier.end());
 	endPoints.insert(endPoints.end(), circle.begin(), circle.end());
 
-	// // Remove duplicates from the point vector
-	// for (int i = 0; i < endPoints.size(); i++)
-	// {
-	// 	for (int j = i+1; j < endPoints.size(); j++)
-	// 	{
-	// 		if (endPoints[i].getX() == endPoints[j].getX() && endPoints[i].getY() == endPoints[j].getY())
-	// 			endPoints.erase(endPoints.begin() + j);
-	// 	}
-	// }
+	// Remove duplicates from the point vector
+	for (int i = 0; i < endPoints.size(); i++)
+	{
+		for (int j = i+1; j < endPoints.size(); j++)
+		{
+			if (endPoints[i].getPos() == endPoints[j].getPos())
+				endPoints.erase(endPoints.begin() + j);
+		}
+	}
 
 	// Create vector of rays with the same point
 	// angle will be set later in the game loop
 	raycast::Point ray_point{10, screenHeight/2}; // shared point for rays
-	std::vector<raycast::RayEndPoint> rayEndPoints;
-	rayEndPoints.reserve(endPoints.size()*2);
+	std::vector<raycast::Ray> rays;
+	rays.reserve(endPoints.size()*3);
+
+	for (int a = 0; a < endPoints.size()*3; a++)
+		rays.push_back(raycast::Ray{&ray_point, 0});
 
 	// Store all the points of collision
 	std::vector<raycast::Point> collisions;
-	collisions.reserve(rayEndPoints.size());
+	collisions.reserve(rays.size());
 
 	// Main game loop
 	while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -100,65 +103,34 @@ int main(void)
 		ray_point.x = GetMouseX();
 		ray_point.y = GetMouseY();
 
-
-		rayEndPoints.clear();
 		// Set rays to follow points
-		for (int i = 0; i < endPoints.size(); i++)
-		{	
-			auto ray1 = new raycast::Ray{ray_point, 0};
-			auto ray2 = new raycast::Ray{ray_point, 0};
-			ray1->pointTo(endPoints[i].getPos());
-			ray2->pointTo(endPoints[i].getOtherPos());
-			rayEndPoints.push_back(raycast::RayEndPoint{ray1, &endPoints[i]});
-			rayEndPoints.push_back(raycast::RayEndPoint{ray2, endPoints[i].getOtherPtr()});
+		for (int a = 0; a < endPoints.size()*3; a+=3)
+		{
+			rays[a].pointTo(endPoints[a/3].getPos());
+			rays[a+1].setAngle(rays[a].getAngle()+theta);
+			rays[a+2].setAngle(rays[a].getAngle()-theta);
 		}
 		// Sort rays based on their angles
-		std::sort(rayEndPoints.begin(), rayEndPoints.end());
-
-		for (int i = 0; i < rayEndPoints.size(); i++)
-		{	
-			auto rayEndPoint = rayEndPoints[i];
-
-			auto ray = *rayEndPoint.ray;
-			auto endPoint = rayEndPoint.endPoint->getOther();
-			float a = ray.angleTo(endPoint.getPos());
-			float dist = endPoint.getPos().dist(ray_point);
-
-			if (dist < rayEndPoint.dist)
-				dist = rayEndPoint.dist;
-
-			if (a>ray.getAngle())
-			{
-				int j;
-				for (j = i + 1; j < rayEndPoints.size(); j++){
-					auto otherRayEndPoint = rayEndPoints[j];
-					if (otherRayEndPoint.dist < dist || a < otherRayEndPoint.ray->getAngle())
-						break;
-				}
-				if (j != i+1)
-					rayEndPoints.erase(rayEndPoints.begin()+(i+1), rayEndPoints.begin()+j-1);
-			}
-		}
+		std::sort(rays.begin(), rays.end());
 
 		// Empty collisions vector to be used in for loop
 		collisions.clear();
 
 		// Find all the points of collision for the rays
-		for (auto rayEndPoint : rayEndPoints)
+		for (auto ray : rays)
 		{	
 			// Sets the ray as a line segment of size lengthRay 
 			float closestDist = lengthRay;
-			auto ray = *rayEndPoint.ray;
 
 			for (auto endPoint : endPoints) 
 			{
-				// raycast::Point* collision = ray.cast(endPoint);
+				raycast::Point* collision = ray.cast(endPoint);
 
-				// if (collision == NULL)
-				// 	continue;
+				if (collision == NULL)
+					continue;
 
-				// float dist = collision->dist(ray.getPos());
-				float dist = ray.cast(endPoint, lengthRay);
+				float dist = collision->dist(ray.getPos());
+				// float dist = ray.cast(endPoint, lengthRay);
 
 				if(dist < closestDist) 
 					closestDist = dist;
