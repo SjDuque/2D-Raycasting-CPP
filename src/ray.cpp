@@ -68,9 +68,14 @@ float getDirX();
 float getDirY();
 Point getDir();
 
+float Ray::angleTo(Point p)
+{
+	return atan2(p.y-this->pos->y, p.x-this->pos->x);
+}
+
 void Ray::pointTo(Point p)
 {
-	this->angle = atan2(p.y-this->pos->y, p.x-this->pos->x);
+	this->angle = this->angleTo(p);
 }
 
 //---------------------------------

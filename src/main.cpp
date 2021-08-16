@@ -106,14 +106,39 @@ int main(void)
 		for (int i = 0; i < endPoints.size(); i++)
 		{	
 			auto ray1 = new raycast::Ray{ray_point, 0};
-			// auto ray2 = new raycast::Ray{ray_point, 0};
+			auto ray2 = new raycast::Ray{ray_point, 0};
 			ray1->pointTo(endPoints[i].getPos());
-			// ray2->pointTo(endPoints[i].getOtherPos());
+			ray2->pointTo(endPoints[i].getOtherPos());
 			rayEndPoints.push_back(raycast::RayEndPoint{ray1, &endPoints[i]});
-			// rayEndPoints.push_back(raycast::RayEndPoint{ray2, endPoints[i].getOtherPtr()});
+			rayEndPoints.push_back(raycast::RayEndPoint{ray2, endPoints[i].getOtherPtr()});
 		}
 		// Sort rays based on their angles
 		std::sort(rayEndPoints.begin(), rayEndPoints.end());
+
+		for (int i = 0; i < rayEndPoints.size(); i++)
+		{	
+			auto rayEndPoint = rayEndPoints[i];
+
+			auto ray = *rayEndPoint.ray;
+			auto endPoint = rayEndPoint.endPoint->getOther();
+			float a = ray.angleTo(endPoint.getPos());
+			float dist = endPoint.getPos().dist(ray_point);
+
+			if (dist < rayEndPoint.dist)
+				dist = rayEndPoint.dist;
+
+			if (a>ray.getAngle())
+			{
+				int j;
+				for (j = i + 1; j < rayEndPoints.size(); j++){
+					auto otherRayEndPoint = rayEndPoints[j];
+					if (otherRayEndPoint.dist < dist || a < otherRayEndPoint.ray->getAngle())
+						break;
+				}
+				if (j != i+1)
+					rayEndPoints.erase(rayEndPoints.begin()+(i+1), rayEndPoints.begin()+j-1);
+			}
+		}
 
 		// Empty collisions vector to be used in for loop
 		collisions.clear();

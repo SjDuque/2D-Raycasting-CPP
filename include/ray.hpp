@@ -32,6 +32,7 @@ namespace raycast{
 		Point getDir();
 
 		// Methods
+		float angleTo(Point p);
 		void pointTo(Point p);
 		Point* cast(EndPoint endPoint);
 		float cast(EndPoint endPoint, const float maxDist);
